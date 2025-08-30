@@ -1,0 +1,27 @@
+{
+  "name": "vue3-pouch",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "build": "tsdown"
+  },
+  "peerDependencies": {
+    "pouchdb": "9.0.0",
+    "pouchdb-find": "9.0.0",
+    "vue": "^3.5.17"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "^22.0.2",
+    "@types/pouchdb": "^6.4.2",
+    "@types/pouchdb-find": "^7.3.3",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "@vue/tsconfig": "^0.7.0",
+    "npm-run-all2": "^8.0.4",
+    "tsdown": "^0.14.2",
+    "typescript": "~5.8.0",
+    "unplugin-vue": "^7.0.1",
+    "vite": "npm:rolldown-vite@latest",
+    "vite-plugin-vue-devtools": "^7.7.7",
+    "vue-tsc": "^2.2.10"
+  }
+}
