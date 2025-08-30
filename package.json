@@ -1,7 +1,12 @@
 {
   "name": "vue3-pouch",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GoatLibs/vue3-pouch"
+  },
   "scripts": {
     "build": "tsdown"
   },
