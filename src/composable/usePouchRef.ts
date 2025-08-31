@@ -1,35 +1,42 @@
 import { ref, onMounted, onUnmounted, readonly } from 'vue'
-import type { PouchDatabase, PouchExistingDocument, PouchFindParams, PouchFindResponse, PouchObserver } from '../types';
+import type { PouchDatabase, PouchExistingDocument, PouchFindParams, PouchObserver } from '../types';
 
 
-export function usePouchRef<C extends {}>(findParams: PouchFindParams<C> | "all" | string, db: PouchDatabase<C>) {
-    const contentWrite = ref<PouchFindResponse<C> | PouchExistingDocument<C> | null>(null)
+export function usePouchRef<TContent extends TDatabaseType,
+    TDatabaseType extends {} = {},
+    TDatabase extends PouchDatabase<TDatabaseType> = PouchDatabase<TDatabaseType>,
+    TIsSingle extends boolean = false>(config: PouchFindParams<TContent, TIsSingle> | "all" | string, db: TDatabase) {
+    const contentWrite = ref<(TIsSingle extends true ? PouchExistingDocument<TContent> : PouchExistingDocument<TContent>[]) | null>(null)
 
     const content = readonly(contentWrite)
 
     let observer: PouchObserver | undefined;
     onMounted(async () => {
-        if (findParams === "all") {
-            contentWrite.value = await db.allDocs()
+        if (config === "all") {
+            contentWrite.value = (await db.allDocs({
+                include_docs: true
+            })).rows.map((d) => {
+                return d.doc!
+            })
         }
-        else if (typeof findParams === 'string') {
-            contentWrite.value = await db.get(findParams)
+        else if (typeof config === 'string') {
+            contentWrite.value = await db.get(config)
         }
         else {
-            contentWrite.value = await db.find(findParams)
+            contentWrite.value = (await db.find(config)).docs
         }
         observer = db.changes({
             since: 'now',
             live: true
         }).on('change', async () => {
-            if (findParams === "all") {
+            if (config === "all") {
                 contentWrite.value = await db.allDocs()
             }
-            else if (typeof findParams === 'string') {
-                contentWrite.value = await db.get(findParams)
+            else if (typeof config === 'string') {
+                contentWrite.value = await db.get(config)
             }
             else {
-                contentWrite.value = await db.find(findParams)
+                contentWrite.value = (await db.find(config)).docs
             }
         })
     })

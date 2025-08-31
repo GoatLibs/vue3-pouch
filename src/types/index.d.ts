@@ -9,7 +9,11 @@
 
 export type PouchDatabase<T extends {}> = PouchDB.Database<T>
 
-export type PouchFindParams<T extends {}> = PouchDB.Find.FindRequest<T>
+//export type PouchFindParams<T extends {}> = PouchDB.Find.FindRequest<T>
+
+export interface PouchFindParams<T extends {}, S extends boolean = false> extends PouchDB.Find.FindRequest<T> {
+    single?: S
+}
 
 export type PouchFindResponse<T extends {}> = PouchDB.Find.FindResponse<T>
 
