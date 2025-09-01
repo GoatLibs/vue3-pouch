@@ -36,13 +36,22 @@ export function usePouchRef<TContent extends TDatabaseType,
             live: true
         }).on('change', async () => {
             if (config === "all") {
-                contentWrite.value = await db.allDocs()
+                contentWrite.value = (await db.allDocs({
+                    include_docs: true
+                })).rows.map((d) => {
+                    return d.doc!
+                })
             }
             else if (typeof config === 'string') {
                 contentWrite.value = await db.get(config)
             }
             else {
-                contentWrite.value = (await db.find(config)).docs
+                if (config.limit === 1) {
+                    contentWrite.value = (await db.find(config)).docs[0]
+                }
+                else {
+                    contentWrite.value = (await db.find(config)).docs
+                }
             }
         })
     })
