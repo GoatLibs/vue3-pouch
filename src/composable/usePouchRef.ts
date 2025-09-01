@@ -4,8 +4,9 @@ import type { PouchDatabase, PouchExistingDocument, PouchFindParams, PouchObserv
 
 export function usePouchRef<TContent extends TDatabaseType,
     TDatabaseType extends {} = {},
+    TIsSingle extends boolean = false,
     TDatabase extends PouchDatabase<TDatabaseType> = PouchDatabase<TDatabaseType>,
-    TIsSingle extends boolean = false>(config: PouchFindParams<TContent, TIsSingle> | "all" | string, db: TDatabase) {
+>(config: PouchFindParams<TContent> | "all" | string, db: TDatabase) {
     const contentWrite = ref<(TIsSingle extends true ? PouchExistingDocument<TContent> : PouchExistingDocument<TContent>[]) | null>(null)
 
     const content = readonly(contentWrite)
@@ -23,7 +24,12 @@ export function usePouchRef<TContent extends TDatabaseType,
             contentWrite.value = await db.get(config)
         }
         else {
-            contentWrite.value = (await db.find(config)).docs
+            if (config.limit === 1) {
+                contentWrite.value = (await db.find(config)).docs[0]
+            }
+            else {
+                contentWrite.value = (await db.find(config)).docs
+            }
         }
         observer = db.changes({
             since: 'now',
