@@ -7,7 +7,7 @@ export function usePouchRef<TContent extends TDatabaseType,
     TIsSingle extends boolean = false,
     TDatabase extends PouchDatabase<TDatabaseType> = PouchDatabase<TDatabaseType>,
 >(config: PouchFindParams<TContent> | "all" | string, db: TDatabase) {
-    const contentWrite = ref<(TIsSingle extends true ? PouchExistingDocument<TContent> : PouchExistingDocument<TContent>[]) | null>(null)
+    const contentWrite = ref<(TIsSingle extends true ? PouchExistingDocument<TContent> : PouchExistingDocument<TContent>[]) | null | undefined>(undefined)
 
     const content = readonly(contentWrite)
 
@@ -18,17 +18,17 @@ export function usePouchRef<TContent extends TDatabaseType,
                 include_docs: true
             })).rows.map((d) => {
                 return d.doc!
-            })
+            }) ?? null
         }
         else if (typeof config === 'string') {
-            contentWrite.value = await db.get(config)
+            contentWrite.value = await db.get(config) ?? null
         }
         else {
             if (config.limit === 1) {
-                contentWrite.value = (await db.find(config)).docs[0]
+                contentWrite.value = (await db.find(config)).docs[0] ?? null
             }
             else {
-                contentWrite.value = (await db.find(config)).docs
+                contentWrite.value = (await db.find(config)).docs ?? null
             }
         }
         observer = db.changes({
@@ -40,17 +40,17 @@ export function usePouchRef<TContent extends TDatabaseType,
                     include_docs: true
                 })).rows.map((d) => {
                     return d.doc!
-                })
+                }) ?? null
             }
             else if (typeof config === 'string') {
-                contentWrite.value = await db.get(config)
+                contentWrite.value = await db.get(config) ?? null
             }
             else {
                 if (config.limit === 1) {
-                    contentWrite.value = (await db.find(config)).docs[0]
+                    contentWrite.value = (await db.find(config)).docs[0] ?? null
                 }
                 else {
-                    contentWrite.value = (await db.find(config)).docs
+                    contentWrite.value = (await db.find(config)).docs ?? null
                 }
             }
         })
