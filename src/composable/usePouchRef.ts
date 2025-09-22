@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted, readonly, isRef } from 'vue'
+import { ref, onMounted, onUnmounted, readonly, isRef, toValue, watchEffect } from 'vue'
 import type { Config, PouchDatabase, PouchExistingDocument, PouchFindParams, PouchObserver } from '../types';
 
 
@@ -15,7 +15,7 @@ export function usePouchRef<TContent extends TDatabaseType,
 
     async function updateRef() {
         try {
-            const goodConfig = isRef(config) ? config.value : config
+            const goodConfig = toValue(config)
             if (goodConfig) {
                 if (goodConfig === "all") {
                     contentWrite.value = (await db.allDocs({
@@ -36,6 +36,9 @@ export function usePouchRef<TContent extends TDatabaseType,
                     }
                 }
             }
+            else {
+                contentWrite.value = null
+            }
         }
         catch (e) {
             throw e;
@@ -54,5 +57,8 @@ export function usePouchRef<TContent extends TDatabaseType,
         observer?.cancel()
     })
 
+    watchEffect(async () => {
+        await updateRef()
+    })
     return { content }
 }

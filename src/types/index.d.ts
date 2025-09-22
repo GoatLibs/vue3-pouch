@@ -27,4 +27,4 @@ export type PouchExistingDocumentArray<T extends {}> = Array<{
     docs: PouchDB.Core.ExistingDocument<T>
 }>
 
-export type Config<T extends {}> = PouchFindParams<T> | "all" | string | Ref<PouchFindParams<T> | string | null>
+export type Config<T extends {}> = PouchFindParams<T> | "all" | string | null | Ref<PouchFindParams<T> | string | null>
