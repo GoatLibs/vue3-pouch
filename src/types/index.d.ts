@@ -6,6 +6,8 @@
 /// <reference types="pouchdb-replication" />
 /// <reference types="pouchdb-find" />
 
+import { Ref } from "vue"
+
 
 export type PouchDatabase<T extends {}> = PouchDB.Database<T>
 
@@ -24,3 +26,5 @@ export type PouchExistingDocument<T extends {}> = PouchDB.Core.ExistingDocument<
 export type PouchExistingDocumentArray<T extends {}> = Array<{
     docs: PouchDB.Core.ExistingDocument<T>
 }>
+
+export type Config<T extends {}> = PouchFindParams<T> | "all" | string | Ref<PouchFindParams<T> | string>
