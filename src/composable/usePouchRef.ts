@@ -16,22 +16,24 @@ export function usePouchRef<TContent extends TDatabaseType,
     async function updateRef() {
         try {
             const goodConfig = isRef(config) ? config.value : config
-            if (goodConfig === "all") {
-                contentWrite.value = (await db.allDocs({
-                    include_docs: true
-                })).rows.map((d) => {
-                    return d.doc!
-                }) ?? null
-            }
-            else if (typeof goodConfig === 'string') {
-                contentWrite.value = await db.get(goodConfig) ?? null
-            }
-            else {
-                if (goodConfig.limit === 1) {
-                    contentWrite.value = (await db.find(goodConfig)).docs[0] ?? null
+            if (goodConfig) {
+                if (goodConfig === "all") {
+                    contentWrite.value = (await db.allDocs({
+                        include_docs: true
+                    })).rows.map((d) => {
+                        return d.doc!
+                    }) ?? null
+                }
+                else if (typeof goodConfig === 'string') {
+                    contentWrite.value = await db.get(goodConfig) ?? null
                 }
                 else {
-                    contentWrite.value = (await db.find(goodConfig)).docs ?? null
+                    if (goodConfig.limit === 1) {
+                        contentWrite.value = (await db.find(goodConfig)).docs[0] ?? null
+                    }
+                    else {
+                        contentWrite.value = (await db.find(goodConfig)).docs ?? null
+                    }
                 }
             }
         }
@@ -40,7 +42,6 @@ export function usePouchRef<TContent extends TDatabaseType,
         }
     }
     onMounted(async () => {
-
         await updateRef()
         observer = db.changes({
             since: 'now',
