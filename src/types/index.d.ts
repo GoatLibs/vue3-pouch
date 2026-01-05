@@ -23,8 +23,26 @@ export type PouchObserver = PouchDB.Core.Changes<{}>
 
 export type PouchExistingDocument<T extends {}> = PouchDB.Core.ExistingDocument<T>
 
+export type PouchError = PouchDB.Core.Error
+
 export type PouchExistingDocumentArray<T extends {}> = Array<{
     docs: PouchDB.Core.ExistingDocument<T>
 }>
 
 export type Config<T extends {}> = PouchFindParams<T> | "all" | string | null | Ref<PouchFindParams<T> | string | null>
+
+export interface BaseOptions {
+    onInit?: () => void,
+    onChange?: () => void,
+    watcher?: PouchObserver
+}
+
+export interface OptionsWithThrow extends BaseOptions {
+    throwOnError: true
+}
+
+export interface OptionsWithErrorFn extends BaseOptions {
+    throwOnError?: false | undefined,
+    onError: (e: unknown) => void
+}
+export type Options = OptionsWithErrorFn | OptionsWithThrow

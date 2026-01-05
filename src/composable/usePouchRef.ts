@@ -1,12 +1,12 @@
 import { ref, onMounted, onUnmounted, readonly, isRef, toValue, watchEffect } from 'vue'
-import type { Config, PouchDatabase, PouchExistingDocument, PouchFindParams, PouchObserver } from '../types';
+import type { Config, PouchDatabase, PouchExistingDocument, PouchFindParams, PouchObserver, Options, PouchError } from '../types';
 
 
 export function usePouchRef<TContent extends TDatabaseType,
     TDatabaseType extends {} = {},
     TIsSingle extends boolean = false,
     TDatabase extends PouchDatabase<TDatabaseType> = PouchDatabase<TDatabaseType>,
->(config: Config<TContent>, db: TDatabase) {
+>(config: Config<TContent>, db: TDatabase, options?: Options) {
     const contentWrite = ref<(TIsSingle extends true ? PouchExistingDocument<TContent> : PouchExistingDocument<TContent>[]) | null | undefined>(undefined)
 
     const content = readonly(contentWrite)
@@ -40,16 +40,27 @@ export function usePouchRef<TContent extends TDatabaseType,
                 contentWrite.value = null
             }
         }
-        catch (e) {
-            throw e;
+        catch (e: unknown) {
+            if (options?.throwOnError) {
+                throw e;
+            }
+            else {
+                options?.onError(e)
+            }
         }
     }
     onMounted(async () => {
+        if (options?.onInit) {
+            options.onInit()
+        }
         await updateRef()
         observer = db.changes({
             since: 'now',
             live: true
         }).on('change', async () => {
+            if (options?.onChange) {
+                options.onChange()
+            }
             await updateRef()
         })
     })
