@@ -1,6 +1,14 @@
 import { ref, onMounted, onUnmounted, readonly, isRef, toValue, watchEffect } from 'vue'
 import type { Config, PouchDatabase, PouchExistingDocument, PouchFindParams, PouchObserver, Options, PouchError } from '../types';
 
+function isPouchError(error: unknown): error is PouchError {
+    return (
+        typeof error === 'object' &&
+        error !== null &&
+        'name' in error &&
+        'message' in error
+    );
+}
 
 export function usePouchRef<TContent extends TDatabaseType,
     TDatabaseType extends {} = {},
@@ -9,7 +17,11 @@ export function usePouchRef<TContent extends TDatabaseType,
 >(config: Config<TContent>, db: TDatabase, options?: Options) {
     const contentWrite = ref<(TIsSingle extends true ? PouchExistingDocument<TContent> : PouchExistingDocument<TContent>[]) | null | undefined>(undefined)
 
-    const content = readonly(contentWrite)
+    const isInit = ref<boolean>(false)
+    const isLoading = ref<boolean>(false)
+    const isLoaded = ref<boolean>(false)
+    const isError = ref<boolean>(false)
+    const error = ref<string | null>(null)
 
     let observer: PouchObserver | undefined;
 
@@ -17,6 +29,10 @@ export function usePouchRef<TContent extends TDatabaseType,
         try {
             const goodConfig = toValue(config)
             if (goodConfig) {
+                isError.value = false
+                error.value = null
+                isLoading.value = true
+
                 if (goodConfig === "all") {
                     contentWrite.value = (await db.allDocs({
                         include_docs: true
@@ -39,8 +55,14 @@ export function usePouchRef<TContent extends TDatabaseType,
             else {
                 contentWrite.value = null
             }
+            isLoading.value = false
+            isLoaded.value = true
         }
         catch (e: unknown) {
+            isLoading.value = false
+            isError.value = true
+            error.value = isPouchError(e) ? e.message ?? "" : ""
+
             if (options?.throwOnError) {
                 throw e;
             }
@@ -50,10 +72,13 @@ export function usePouchRef<TContent extends TDatabaseType,
         }
     }
     onMounted(async () => {
+        isInit.value = true
         if (options?.onInit) {
             options.onInit()
         }
-        await updateRef()
+
+        // Observer function is called on init, so don't need to call here
+        // await updateRef()
         observer = db.changes({
             since: 'now',
             live: true
@@ -71,5 +96,11 @@ export function usePouchRef<TContent extends TDatabaseType,
     watchEffect(async () => {
         await updateRef()
     })
-    return { content }
+    return {
+        content: readonly(contentWrite),
+        isLoading: readonly(isLoading),
+        isLoaded: readonly(isLoaded),
+        isError: readonly(isError),
+        error: readonly(error)
+    }
 }
