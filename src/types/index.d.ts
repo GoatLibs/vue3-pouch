@@ -34,6 +34,7 @@ export type Config<T extends {}> = PouchFindParams<T> | "all" | string | null | 
 export interface BaseOptions {
     onInit?: () => void,
     onChange?: () => void,
+    isNotFoundError?: boolean,
     watcher?: PouchObserver
 }
 

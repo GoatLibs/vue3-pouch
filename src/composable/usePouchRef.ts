@@ -61,7 +61,14 @@ export function usePouchRef<TContent extends TDatabaseType,
         catch (e: unknown) {
             isLoading.value = false
             isError.value = true
-            error.value = isPouchError(e) ? e.message ?? "" : ""
+
+            if (isPouchError(e)) {
+                if (e.name === "not_found" && !options?.isNotFoundError) {
+                    return;
+                }
+                error.value = e.message ?? ""
+
+            }
 
             if (options?.throwOnError) {
                 throw e;
