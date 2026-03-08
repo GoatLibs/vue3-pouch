@@ -87,6 +87,11 @@ export function usePouchRef<TContent extends TDatabaseType,
 
         // Observer function is called on init, so don't need to call here
         // await updateRef()
+
+        if(options?.disableWatch) {
+            await updateRef()
+            return;
+        }
         observer = db.changes({
             since: 'now',
             live: true

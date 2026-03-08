@@ -35,7 +35,8 @@ export interface BaseOptions {
     onInit?: () => void,
     onChange?: () => void,
     isNotFoundError?: boolean,
-    watcher?: PouchObserver
+    watcher?: PouchObserver,
+    disableWatch?: boolean | undefined
 }
 
 export interface OptionsWithThrow extends BaseOptions {
